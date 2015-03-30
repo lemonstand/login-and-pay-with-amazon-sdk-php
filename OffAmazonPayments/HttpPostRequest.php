@@ -1,5 +1,4 @@
-<?php
-
+<?php namespace Amzn\OffAmazonPayments;
 /* class HttpCurl
  * Handles Curl POST function for all requests
  */

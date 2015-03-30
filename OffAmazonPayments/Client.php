@@ -1,5 +1,4 @@
-
-<?php
+<?php namespace Amzn\OffAmazonPayments;
 /*******************************************************************************
  *  Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +13,10 @@
  *  License.
  * *****************************************************************************
  */
-require_once 'ResponseParser.php';
-require_once 'HttpPostRequest.php';
+// require_once 'ResponseParser.php';
+// require_once 'HttpPostRequest.php';
+use Amzn\OffAmazonPayments\ResponseParser;
+use Amzn\OffAmazonPayments\HttpPostRequest;
 
 class OffAmazonPaymentsService_Client
 {
