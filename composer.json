@@ -1,0 +1,29 @@
+{
+    "name": "lemonstand/amzn-login-and-pay-with-amazon-sdk-php",
+    "type": "library",
+    "description": "Forked Amazon Login and Pay with Amazon SDK package.",
+    "keywords": [
+        "amazon",
+        "pay",
+        "payment",
+        "payments",
+        "amazon payments"
+    ],
+    "homepage": "https://github.com/lemonstand/login-and-pay-with-amazon-sdk-php",
+    "license": "Apache OSL-2",
+    "authors": [
+        {
+            "name": "Andres Perdomo",
+            "email": "andy@lemonstand.com"
+        }
+    ],
+    "autoload": {
+        "psr-0": { 
+            "Amzn" : "src/"
+        }
+    },
+    "require": {
+        "ext-curl": "*",
+        "php": ">=5.3.0"
+    }
+}
