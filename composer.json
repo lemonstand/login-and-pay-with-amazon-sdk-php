@@ -1,7 +1,7 @@
 {
     "name": "lemonstand/amzn-login-and-pay-with-amazon-sdk-php",
     "type": "library",
-    "description": "Forked Amazon Login and Pay with Amazon SDK package.",
+    "description": "Forked Amazon Login and Pay with Amazon SDK package. Package will use phoenix branch.",
     "keywords": [
         "amazon",
         "pay",
