@@ -13,12 +13,10 @@
  *  License.
  * *****************************************************************************
  */
-// require_once 'ResponseParser.php';
-// require_once 'HttpPostRequest.php';
 use Amzn\OffAmazonPayments\ResponseParser;
 use Amzn\OffAmazonPayments\HttpPostRequest;
 
-class OffAmazonPaymentsService_Client
+class Client
 {
     const MWS_CLIENT_VERSION = '2013-01-01';
     const SERVICE_VERSION = '2013-01-01';

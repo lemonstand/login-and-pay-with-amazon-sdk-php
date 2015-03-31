@@ -2,7 +2,7 @@
 /* class HttpCurl
  * Handles Curl POST function for all requests
  */
-class HttpCurl
+class HttpPostRequest
 {
     private $_url = null;
     private $_response;

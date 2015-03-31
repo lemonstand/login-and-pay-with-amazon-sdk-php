@@ -4,9 +4,8 @@
  * Takes headers and body of the IPN message as input in the constructor
  * verifies that the IPN is from the right resource and has the valid data
  */
-// require_once 'HttpPostRequest.php';
 use Amzn\OffAmazonPayments\HttpPostRequest;
- 
+
 class IpnHandler
 {
 
