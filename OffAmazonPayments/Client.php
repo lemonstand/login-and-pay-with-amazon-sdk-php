@@ -1,26 +1,14 @@
 
 <?php
-/*******************************************************************************
- *  Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *
- *  You may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at:
- *  http://aws.amazon.com/apache2.0
- *  This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- *  CONDITIONS OF ANY KIND, either express or implied. See the License
- *  for the
- *  specific language governing permissions and limitations under the
- *  License.
- * *****************************************************************************
- */
+
 require_once 'ResponseParser.php';
 require_once 'HttpPostRequest.php';
 
 class OffAmazonPaymentsService_Client
 {
-    const MWS_CLIENT_VERSION = '2013-01-01';
+    const MWS_CLIENT_VERSION = '1.0.0';
     const SERVICE_VERSION = '2013-01-01';
+    const MAX_ERROR_RETRY = 3;
     
     //construct User agent string based off of the application_name,application_version,PHP platform
     private $_userAgent = null;
@@ -47,6 +35,7 @@ class OffAmazonPaymentsService_Client
     
     private $_modePath = null;
     
+    //final URL to where the API parameters POST done, based off the _config['region'] and respective $_mwsServiceUrls
     private $_mwsServiceUrl = null;
     
     private $_mwsServiceUrls = array('eu' => 'mws-eu.amazonservices.com',
@@ -69,6 +58,8 @@ class OffAmazonPaymentsService_Client
 				     'uk' => 'eu',
 				     'us' => 'na',
 				     'jp' => 'jp');
+    
+    //boolean variable to check if the API call was a success
     private $_success = false;
     
     /* Takes user configuration array from the user as input
@@ -204,6 +195,15 @@ class OffAmazonPaymentsService_Client
             $this->_config['proxy_user_password'] = $proxy['proxy_user_password'];
     }
     
+    /* Setter for $_mwsServiceUrl
+     * Set the URL to which the post request has to be made for unit testing 
+     */
+    
+    public function setMwsServiceUrl($url)
+    {
+	$this->_mwsServiceUrl = $url;
+    }
+    
     /* Getter
      * Gets the value for the key if the key exists in _config
      */
@@ -215,6 +215,10 @@ class OffAmazonPaymentsService_Client
             throw new Exception('Key ' . $name . ' is either not a part of the configuration array _config or the' . $name . 'does not match the key name in the _config array', 1);
         }
     }
+    
+    /* Getterfor parameters string
+     * Gets the value for the parameters string for unit testing
+     */
     
     public function getParameters()
     {
@@ -339,10 +343,10 @@ class OffAmazonPaymentsService_Client
         $requestParameters    = array_change_key_case($requestParameters, CASE_LOWER);
         
         $fieldMappings = array(
-            'merchant_id' => 'SellerId',
+            'merchant_id' 		=> 'SellerId',
             'amazon_order_reference_id' => 'AmazonOrderReferenceId',
-            'address_consent_token' => 'AddressConsentToken',
-            'mws_auth_token' => 'MWSAuthToken'
+            'address_consent_token' 	=> 'AddressConsentToken',
+            'mws_auth_token' 		=> 'MWSAuthToken'
         );
         
         $responseObject = $this->_setParameters($parameters, $fieldMappings, $requestParameters);
@@ -542,9 +546,9 @@ class OffAmazonPaymentsService_Client
         $requestParameters    = array_change_key_case($requestParameters, CASE_LOWER);
         
         $fieldMappings = array(
-            'merchant_id' => 'SellerId',
-            'amazon_authorization_id' => 'AmazonAuthorizationId',
-            'mws_auth_token' => 'MWSAuthToken'
+            'merchant_id' 		=> 'SellerId',
+            'amazon_authorization_id' 	=> 'AmazonAuthorizationId',
+            'mws_auth_token' 		=> 'MWSAuthToken'
         );
         
         $responseObject = $this->_setParameters($parameters, $fieldMappings, $requestParameters);
@@ -834,7 +838,7 @@ class OffAmazonPaymentsService_Client
      * @param requestParameters['amazon_billing_agreement_id'] - [String]
      * @optional requestParameters['mws_auth_token'] - [String]
      */
-    public function validateBillignAgreement($requestParameters = array())
+    public function validateBillingAgreement($requestParameters = array())
     {
         $parameters           = array();
         $parameters['Action'] = 'ValidateBillingAgreement';
@@ -888,7 +892,7 @@ class OffAmazonPaymentsService_Client
             'capture_now' 			=> 'CaptureNow',
             'soft_descriptor' 			=> 'SoftDescriptor',
             'seller_note' 			=> 'SellerNote',
-            'PlatformId' 			=> 'PlatformId',
+            'platform_id' 			=> 'PlatformId',
             'custom_information' 		=> 'SellerOrderAttributes.CustomInformation',
             'seller_order_id' 			=> 'SellerOrderAttributes.SellerOrderId',
             'store_name' 			=> 'SellerOrderAttributes.StoreName',
@@ -970,7 +974,9 @@ class OffAmazonPaymentsService_Client
                 $setParameters['amazon_billing_agreement_id']       = $requestParameters['amazon_reference_id'];
                 $authorizeParameters['amazon_billing_agreement_id'] = $requestParameters['amazon_reference_id'];
                 $confirmParameters['amazon_billing_agreement_id']   = $requestParameters['amazon_reference_id'];
-            }
+            } else{
+		throw new Exception('Invalid Amazon Reference ID');
+	    }
         } else {
             throw new Exception('key amazon_reference_id is null and is a required parameter');
         }
@@ -1010,11 +1016,11 @@ class OffAmazonPaymentsService_Client
             
         } elseif ($ba) {
             //Get the Billing Agreement details and feed the response object to the ResponseParser
-            $response = $this->getBillingAgreementDetails($setParameters);
+            $responseObj = $this->getBillingAgreementDetails($setParameters);
             
             // Call the function GetBillingAgreementDetailsStatus in ResponseParser.php providing it the XML response
             // $baStatus is an aray containing the State of the Billing Agreement
-            $baStatus = $response->GetBillingAgreementDetailsStatus($response->toXml());
+            $baStatus = $responseObj->GetBillingAgreementDetailsStatus($responseObj->toXml());
             
             if ($baStatus['State'] != 'Open') {
                 $response = $this->SetBillingAgreementDetails($setParameters);
@@ -1023,6 +1029,10 @@ class OffAmazonPaymentsService_Client
                     $response = $this->ConfirmBillingAgreement($confirmParameters);
                 }
             }
+	    //check the Billing agreement status again before making the Authorization.
+	    $responseObj = $this->getBillingAgreementDetails($setParameters);
+            $baStatus = $responseObj->GetBillingAgreementDetailsStatus($responseObj->toXml());
+	    
             if ($this->_success && $baStatus['State'] === 'Open') {
                 $response = $this->AuthorizeOnBillingAgreement($authorizeParameters);
             }
@@ -1186,7 +1196,8 @@ class OffAmazonPaymentsService_Client
                     $httpCurlRequest = new HttpCurl($this->_config);
                     $httpCurlRequest->_httpPost($this->_mwsServiceUrl, $this->_userAgent, $parameters);
                     $response = $httpCurlRequest->getResponse();
-                    
+		    
+		    //split the API response into Response Body and the other parts of the response into other
                     list($other, $responseBody) = explode("\r\n\r\n", $response, 2);
                     $other = preg_split("/\r\n|\n|\r/", $other);
 		    
@@ -1195,14 +1206,15 @@ class OffAmazonPaymentsService_Client
                         'Status' => (int) $code,
                         'ResponseBody' => $responseBody
                     );
-                    
-                    $statusCode = $response['Status'];
-                    
-                    if ($statusCode == 200) {
+		    
+		    $statusCode = $response['Status'];
+		    
+		    if ($statusCode == 200) {
                         $shouldRetry    = false;
                         $this->_success = true;
                     } elseif ($statusCode == 500 || $statusCode == 503) {
-                        $shouldRetry = ($response['ErrorCode'] === 'RequestThrottled') ? false : true;
+                        
+			$shouldRetry = true;
                         if ($shouldRetry && strtolower($this->_config['handle_throttle'])) {
                             $this->_pauseOnRetry(++$retries, $statusCode);
                         }
@@ -1227,7 +1239,7 @@ class OffAmazonPaymentsService_Client
     /**
      * Exponential sleep on failed request
      * @param retries current retry
-     * @throws OffAmazonPaymentsService_Exception if maximum number of retries has been reached
+     * @throws Exception if maximum number of retries has been reached
      */
     private function _pauseOnRetry($retries, $status)
     {
@@ -1235,10 +1247,7 @@ class OffAmazonPaymentsService_Client
             $delay = (int) (pow(4, $retries) * 100000);
             usleep($delay);
         } else {
-            throw new Exception(array(
-                'Message' => "Maximum number of retry attempts reached :  $retries",
-                'StatusCode' => $status
-            ));
+            throw new Exception('Error Code: '. $status.PHP_EOL.'Maximum number of retry attempts - '. $retries .' reached');
         }
     }
     
