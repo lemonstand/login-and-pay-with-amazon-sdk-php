@@ -14,7 +14,7 @@
  * *****************************************************************************
  */
 use Amzn\OffAmazonPayments\ResponseParser;
-use Amzn\OffAmazonPayments\HttpPostRequest;
+use Amzn\OffAmazonPayments\HttpPostRequest as HttpCurl;
 
 class Client
 {
@@ -95,22 +95,22 @@ class Client
                 
 		    if ($json_error != 0) {
 			$errorMsg = "Error with message - content is not in json format" . $this->_getErrorMessageForJsonError($json_error) . " " . $configArray;
-			throw new Exception($errorMsg);
+			throw new \Exception($errorMsg);
 		    }
 		} else {
 		    $errorMsg ='$config is not a Json File path or the Json File was not found in the path provided';
-		    throw new Exception($errorMsg);
+		    throw new \Exception($errorMsg);
 		}
                 
             }
             if (is_array($configArray)) {
                 $this->_checkConfigKeys($configArray);
             } else {
-                throw new Exception('$config is of the incorrect type ' . gettype($configArray) . ' and should be of the type array');
+                throw new \Exception('$config is of the incorrect type ' . gettype($configArray) . ' and should be of the type array');
             }
         }
 	else{
-	    throw new Exception('$config cannot be null.');
+	    throw new \Exception('$config cannot be null.');
 	}
     }
     
@@ -126,7 +126,7 @@ class Client
             if (array_key_exists($key, $this->_config)) {
                 $this->_config[$key] = $value;
             } else {
-                throw new Exception('Key ' . $key . ' is either not part of the configuration or has incorrect Key name.
+                throw new \Exception('Key ' . $key . ' is either not part of the configuration or has incorrect Key name.
 				check the _config array key names to match your key names of your config array ', 1);
             }
         }
@@ -169,7 +169,7 @@ class Client
         if (is_bool($value)) {
             $this->_config['sandbox'] = $value;
         } else {
-            throw new Exception($value . ' is of type ' . gettype($value) . ' and should be a boolean value ');
+            throw new \Exception($value . ' is of type ' . gettype($value) . ' and should be a boolean value ');
         }
     }
     
@@ -181,7 +181,7 @@ class Client
         if (!empty($value)) {
             $this->_config['client_id'] = $value;
         } else {
-            throw new Exception('setter value for client ID provided is empty');
+            throw new \Exception('setter value for client ID provided is empty');
         }
     }
     
@@ -224,7 +224,7 @@ class Client
         if (array_key_exists(strtolower($name), $this->_config)) {
             return $this->_config[strtolower($name)];
         } else {
-            throw new Exception('Key ' . $name . ' is either not a part of the configuration array _config or the' . $name . 'does not match the key name in the _config array', 1);
+            throw new \Exception('Key ' . $name . ' is either not a part of the configuration array _config or the' . $name . 'does not match the key name in the _config array', 1);
         }
     }
     
@@ -263,7 +263,7 @@ class Client
         
         if ($data->aud != $this->_config['client_id']) {
             // the access token does not belong to us
-            throw new Exception('The Access token entered is incorrect');
+            throw new \Exception('The Access token entered is incorrect');
         }
         
         // exchange the access token for user profile
@@ -987,10 +987,10 @@ class Client
                 $authorizeParameters['amazon_billing_agreement_id'] = $requestParameters['amazon_reference_id'];
                 $confirmParameters['amazon_billing_agreement_id']   = $requestParameters['amazon_reference_id'];
             } else{
-		throw new Exception('Invalid Amazon Reference ID');
+		throw new \Exception('Invalid Amazon Reference ID');
 	    }
         } else {
-            throw new Exception('key amazon_reference_id is null and is a required parameter');
+            throw new \Exception('key amazon_reference_id is null and is a required parameter');
         }
         
         if (!empty($requestParameters['charge_amount'])) {
@@ -1122,7 +1122,7 @@ class Client
             $parameters['SignatureMethod'] = $algorithm;
             $stringToSign                  = $this->_calculateStringToSignV2($parameters);
         } else {
-            throw new Exception("Invalid Signature Version specified");
+            throw new \Exception("Invalid Signature Version specified");
         }
         
         return $this->_sign($stringToSign, $algorithm);
@@ -1173,7 +1173,7 @@ class Client
         } else if ($algorithm === 'HmacSHA256') {
             $hash = 'sha256';
         } else {
-            throw new Exception("Non-supported signing method specified");
+            throw new \Exception("Non-supported signing method specified");
         }
         
         return base64_encode(hash_hmac($hash, $data, $this->_config['secret_key'], true));
@@ -1259,7 +1259,7 @@ class Client
             $delay = (int) (pow(4, $retries) * 100000);
             usleep($delay);
         } else {
-            throw new Exception('Error Code: '. $status.PHP_EOL.'Maximum number of retry attempts - '. $retries .' reached');
+            throw new \Exception('Error Code: '. $status.PHP_EOL.'Maximum number of retry attempts - '. $retries .' reached');
         }
     }
     
@@ -1277,10 +1277,10 @@ class Client
                 $this->_mwsServiceUrl   = 'https://' . $this->_mwsEndpointUrl . '/' . $this->_modePath . '/' . self::SERVICE_VERSION;
                 $this->_mwsEndpointPath = '/' . $this->_modePath . '/' . self::SERVICE_VERSION;
             } else {
-                throw new Exception($region . ' is not a valid region');
+                throw new \Exception($region . ' is not a valid region');
             }
         } else {
-            throw new Exception("_config['region'] is a required parameter and is not set");
+            throw new \Exception("_config['region'] is a required parameter and is not set");
         }
     }
     
@@ -1297,10 +1297,10 @@ class Client
 	    } elseif (array_key_exists($region, $this->_liveProfileEndpoint)) {
 		$this->_profileEndpoint = $this->_liveProfileEndpoint[$region];
 	    } else{
-		throw new Exception($region . ' is not a valid region');
+		throw new \Exception($region . ' is not a valid region');
 	    }
 	} else {
-            throw new Exception("_config['region'] is a required parameter and is not set");
+            throw new \Exception("_config['region'] is a required parameter and is not set");
         }
     }
     
